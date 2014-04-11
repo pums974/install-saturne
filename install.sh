@@ -173,18 +173,18 @@ STOP(){
 #=========================================================== Download
 #=========================================================== Function
 download(){
-  if [ ! -e  $BASE/pkg/$1 ] ; then # Download only if not already here
-    cd $BASE/pkg
+  if [ ! -e  $PREFIX/pkg/$1 ] ; then # Download only if not already here
+    cd $PREFIX/pkg
     if [ $DOWN == "NO" ] ; then STOP "Can't Download here, put your packages in pkg" ; fi
     echo -n " - Downloading"
     wget -O $1 $2 > /dev/null 2>&1 || STOP
   fi
-  cd $BASE/src
-  if [ -d $BASE/src/$(basename $1 .tar.gz) ] ; then
-    rm -rf $BASE/src/$(basename $1 .tar.gz) # Remove the sources to clean it
+  cd $PREFIX/src
+  if [ -d $PREFIX/src/$(basename $1 .tar.gz) ] ; then
+    rm -rf $PREFIX/src/$(basename $1 .tar.gz) # Remove the sources to clean it
   fi
   echo -n " - Unpacking"
-  tar -zxvf $BASE/pkg/$1 > /dev/null 2>&1 || STOP "Decompress the package, redownload it"
+  tar -zxvf $PREFIX/pkg/$1 > /dev/null 2>&1 || STOP "Decompress the package, redownload it"
 }
 
 usage(){
@@ -201,7 +201,7 @@ do
              exit 1
              ;;
          p)
-             BASE=$OPTARG
+             PREFIX=$OPTARG
              ;;
          m)
              MACHINE=$OPTARG
