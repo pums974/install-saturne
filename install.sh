@@ -187,12 +187,38 @@ download(){
   tar -zxvf $BASE/pkg/$1 > /dev/null 2>&1 || STOP "Decompress the package, redownload it"
 }
 
+usage(){
+             echo 'use -p PATH to specify the prefix of installation'
+             echo 'use -m MACHINE to specify the machine'
+}
+
+
+while getopts “hm:p:” OPTION
+do
+     case $OPTION in
+         h)
+             usage
+             exit 1
+             ;;
+         p)
+             BASE=$OPTARG
+             ;;
+         m)
+             MACHINE=$OPTARG
+             ;;
+         ?)
+             usage
+             exit
+             ;;
+     esac
+done
 
 
 
 #====================================================================
 #============================================================== Start
 #====================================================================
+
 
 #STEP0 : machine name
 #STEP1 : what libs and what compilator collection
