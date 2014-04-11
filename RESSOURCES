@@ -1,0 +1,46 @@
+#========= MAKEFILE.IN.SCOTCH BEGIN =========
+
+EXE		=
+LIB		= .a
+OBJ		= .o
+
+MAKE		= make
+AR		= ar
+ARFLAGS		= -ruv
+CAT		= cat
+CCS		= #S_CC#
+CCP		= #P_CC#
+CCD		= #P_CC#
+CFLAGS		= #CFLAGS# -DCOMMON_FILE_COMPRESS_GZ -Drestrict=__restrict -DIDXSIZE64 -fPIC
+CLIBFLAGS	= 
+LDFLAGS		= #LDFLAGS# -lz -lm -lrt
+CP		= cp
+LEX		= flex -Pscotchyy -olex.yy.c
+LN		= ln
+MKDIR		= mkdir
+MV		= mv
+RANLIB		= ranlib
+YACC		= bison -pscotchyy -y -b y
+
+#========= MAKEFILE.IN.SCOTCH END =========
+
+#========= PATCH CODE_SATURNE BEGIN =========
+--- lib/python2.6/site-packages/code_saturne/cs_exec_environment.py
++++ lib/python2.6/site-packages/code_saturne/cs_exec_environment.py
+@@ -1019,10 +1019,10 @@
+
+             info = get_command_outputs(infoname + ' -version')
+             v = info.rstrip().split('\t')[1].split('.')
+-            if int(v[0]) == 1 and int(v[1]) < 3:
+-                return 'mpd'
+-            else:
+-                return 'hydra'
++#            if int(v[0]) == 1 and int(v[1]) < 3:
++            return 'mpd'
++#            else:
++#                return 'hydra'
+
+         # If MPICH2 / MPICH-3 info is not available, try
+         # to determine this in another way
+#========= PATCH CODE_SATURNE END =========
+
