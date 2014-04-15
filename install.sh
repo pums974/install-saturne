@@ -141,7 +141,7 @@ TEST_STEP8(){ DEBUG="TEST_STEP8"
 #========================================================== Debiefing
 TEST_STEP9(){ DEBUG="TEST_STEP9"
   echo
-  echo "\e[32m\e[1mEND\e[21m\e[0m"
+  echo -e "\e[32m\e[1mEND\e[21m\e[0m"
   echo
 }
 
