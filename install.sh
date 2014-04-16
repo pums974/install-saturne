@@ -38,7 +38,7 @@ TEST_STEP0(){ DEBUG="TEST_STEP0"
     if [ ! "$CONFIRM" = "y" ]; then exit 1 ; fi
   fi
   echo
-  echo "Setup of Code_Saturne_$VERSION_SATURNE on $MACHINE"
+  echo "Setup of Code_Saturne on $MACHINE"
 }
 
 
@@ -154,6 +154,10 @@ STOP(){
   echo -e "\e[31m\e[1m*** Error ***\e[21m\e[0m : "
   echo $1
   echo " in $DEBUG"
+  echo
+  echo "You may want to look at log files here"
+  echo $PWD
+  echo
   if [ -n "$EXPORT_LIST$MODULES_LIST" ]; then
     echo " to reproduce the environment :"
     [[ -n "$MODULES_LIST" ]] &&    echo && echo $MODULES_LIST | sed 's:\ :\n:g' | sed 's/.*/module load &/'
@@ -188,10 +192,20 @@ download(){
 }
 
 usage(){
-             echo 'use -p PATH to specify the prefix of installation'
-             echo 'use -m MACHINE to specify the machine'
+  echo 'use -p PATH to specify the prefix of installation (default : pwd)'
+  echo 'use -m MACHINE to specify the machine, Where MACHINE is one of '
+  echo 'LOCAL (default)'
+  echo 'ADA'
+  echo 'CURIE'
+  echo 'HULK'
+  echo 'MC2P'
+
+ echo 'You can find more info in README.md'
+
 }
 
+
+SCRIPTPATH=$(dirname $(readlink -f $0))
 
 while getopts “hm:p:” OPTION
 do
@@ -219,6 +233,7 @@ done
 #============================================================== Start
 #====================================================================
 
+exit
 
 #STEP0 : machine name
 #STEP1 : what libs and what compilator collection
@@ -231,7 +246,7 @@ done
 #STEP9 : debriefing
 LIST_STEP="0 1 2 3 4 5 6 7 8 9"
 for STEP in $LIST_STEP;do
-  for FILE in $(ls install/*.conf);do
+  for FILE in $(ls $SCRIPTPATH/*.conf);do
     unset STEP$STEP
     source $FILE $STEP
   done
