@@ -193,12 +193,15 @@ download(){
 
 usage(){
   echo 'use -p PATH to specify the prefix of installation (default : pwd)'
-  echo 'use -m MACHINE to specify the machine, Where MACHINE is one of '
-  echo 'LOCAL (default)'
-  echo 'ADA'
-  echo 'CURIE'
-  echo 'HULK'
-  echo 'MC2P'
+  echo '    -m MACHINE to specify the machine, Where MACHINE is one of '
+  echo '       LOCAL (default)'
+  echo '       ADA'
+  echo '       CURIE'
+  echo '       HULK'
+  echo '       MC2P'
+  echo '    -g to enable the GUI'
+  echo '    -v to specify the version of code_saturne to install'
+  echo '    -h this menu'
 
  echo 'You can find more info in README.md'
 
@@ -207,7 +210,7 @@ usage(){
 
 SCRIPTPATH=$(dirname $(readlink -f $0))
 
-while getopts “hm:p:” OPTION
+while getopts “hm:p:v:g” OPTION
 do
      case $OPTION in
          h)
@@ -219,6 +222,12 @@ do
              ;;
          m)
              MACHINE=$OPTARG
+             ;;
+         g)
+             EXTRA_CONF="$EXTRA_CONF --with-libxml2 --enable-gui"
+             ;;
+         v)
+             VERSION_SATURNE=$OPTARG
              ;;
          ?)
              usage

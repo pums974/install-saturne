@@ -18,6 +18,20 @@ MC2P              | http://mc2p.cnrs.pprime.fr/
 
 and PREFIX is the path where you want to install saturne (default : pwd)
 
+To have more info :
+
+    > install.sh -h
+    use -p PATH to specify the prefix of installation (default : pwd)
+        -m MACHINE to specify the machine, Where MACHINE is one of 
+           LOCAL (default)
+           ADA
+           CURIE
+           HULK
+           MC2P
+        -g to enable the GUI
+        -v to specify the version of code_saturne to install
+        -h this menu
+
 Adaptation of the automatic process
 -----------------------------------
 If you want to select the package you want to use/install,
