@@ -103,10 +103,19 @@ for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep "FLAGS"); do
   eval value='$'$var
   echo " "$var"|"$value
 done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
-for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep -v "FLAGS"); do
+for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep -v "FLAGS"| grep -v "PATH"); do
   eval value='$'$var
   echo " "$var"|"$value
 done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
+echo
+echo "Contents of PATH and LD_LIBRARY_PATH may not be absolutly relevent"
+echo
+for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep -v "FLAGS"| grep "PATH"); do
+  eval value='$'$var
+#  echo " "$var"|"$value
+  echo $value | sed 's#:#\n#g' | sed 's/.*/ '$var'|&/'
+done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
+echo 
 }
 
 TEST_STEP4(){ DEBUG="TEST_STEP4"
@@ -188,7 +197,7 @@ download(){
     rm -rf $PREFIX/src/$(basename $1 .tar.gz) # Remove the sources to clean it
   fi
   echo -n " - Unpacking"
-  tar -zxvf $PREFIX/pkg/$1 > /dev/null 2>&1 || STOP "Decompress the package, redownload it"
+  tar -zxvf $PREFIX/pkg/$1 > /dev/null 2>&1 || STOP "Decompressing the package, redownload it"
 }
 
 usage(){
@@ -218,7 +227,7 @@ do
              exit 1
              ;;
          p)
-             PREFIX=$OPTARG
+             PREFIX=$(readlink -f $OPTARG)
              ;;
          m)
              MACHINE=$OPTARG
@@ -241,8 +250,6 @@ done
 #====================================================================
 #============================================================== Start
 #====================================================================
-
-exit
 
 #STEP0 : machine name
 #STEP1 : what libs and what compilator collection
