@@ -155,6 +155,17 @@ TEST_STEP9(){ DEBUG="TEST_STEP9"
 }
 
 
+export() {
+  command export "$*"
+  EXPORT_LIST="$EXPORT_LIST $(echo $*| cut -d"=" -f 1)"
+}
+
+module() {
+  command module "$*"
+  [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST $(echo $*| cut -d" " -f 2-)"
+}
+
+
 #============================================================== Catch
 #============================================================== Error
 STOP(){
