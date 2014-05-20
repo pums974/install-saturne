@@ -1,4 +1,7 @@
 #! /bin/bash
+shopt -s expand_aliases
+exec > >(tee install.log)
+exec 2>&1
 
 # This file does nothing but call each step of each file in the install directory
 # and checks if everything is OK
@@ -24,7 +27,7 @@
 
 #========================================================= Test STEP0
 #======================================================= Machine name
-TEST_STEP0(){ DEBUG="TEST_STEP0"
+TEST_STEP0(){
   RES="KO"
   for TEST in $LIST_MACHINE;do
     if [ "$MACHINE" = "$TEST" ]; then
@@ -44,7 +47,7 @@ TEST_STEP0(){ DEBUG="TEST_STEP0"
 
 #========================================================= Test STEP1
 #===================================== libs and compilator collection
-TEST_STEP1(){ DEBUG="TEST_STEP1"
+TEST_STEP1(){
   LIST_TEST="ICC GCC"  # TEST the compilator type
   RES="KO"
   for TEST in $LIST_TEST;do
@@ -76,21 +79,21 @@ TEST_STEP1(){ DEBUG="TEST_STEP1"
   if [ "$OPENMP" = "NO" ]; then echo " without OpenMP";fi
   echo 'Using the following libraries :'
   for PKG in $LIST_PKG; do
-    eval PKG1='$'$PKG
-    eval PKG2='$VERSION_'$PKG
-    echo " "$PKG" "$PKG1" "$PKG2
+    eval PKG1='$'"$PKG"
+    eval PKG2='$VERSION_'"$PKG"
+    echo " $PKG $PKG1 $PKG2"
   done | awk '{printf "%8s %3s %10-s\n",$1,$2,$3 }'
 }
 
 #========================================================= Test STEP2
 #======================================================== Environment
-TEST_STEP2(){ DEBUG="TEST_STEP2"
-[[ -n "$MODULES_LIST" ]] && echo &&  echo $MODULES_LIST | sed 's:\ :\n:g' | sed 's/.*/module load &/'
+TEST_STEP2(){
+[[ -n "$MODULES_LIST" ]] && echo &&  echo "$MODULES_LIST" | sed 's:\ :\n:g' | sed 's/.*/module load &/'
 }
 
 #========================================================= Test STEP3
 #================================================== Compilator option
-TEST_STEP3(){ DEBUG="TEST_STEP3"
+TEST_STEP3(){
   echo
   echo "     Seqential compilators    Parallel compilators"
   echo " C   $S_CC  $P_CC"  | awk '{printf " %4-s %20s %23s\n",$1,$2,$3 }'
@@ -98,74 +101,78 @@ TEST_STEP3(){ DEBUG="TEST_STEP3"
   echo " FC  $S_FC  $P_FC"  | awk '{printf " %4-s %20s %23s\n",$1,$2,$3 }'
   echo " F77 $S_F77 $P_F77" | awk '{printf " %4-s %20s %23s\n",$1,$2,$3 }'
 [[ -n "$EXPORT_LIST" ]] && echo
-EXPORT_LIST=$(echo $EXPORT_LIST | sed 's:\ :\n:g' | sort | uniq)
-for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep "FLAGS"); do
-  eval value='$'$var
-  echo " "$var"|"$value
+EXPORT_LIST=$(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | sort | uniq)
+for var in $(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | grep "FLAGS"); do
+  eval value='$'"$var"
+  echo " $var|$value"
 done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
-for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep -v "FLAGS"| grep -v "PATH"); do
-  eval value='$'$var
-  echo " "$var"|"$value
+for var in $(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | grep -v "FLAGS"| grep -v "PATH"); do
+  eval value='$'"$var"
+  echo " $var|$value"
 done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
 echo
 echo "Contents of PATH and LD_LIBRARY_PATH may not be absolutly relevent"
 echo
-for var in $(echo $EXPORT_LIST | sed 's:\ :\n:g' | grep -v "FLAGS"| grep "PATH"); do
-  eval value='$'$var
-#  echo " "$var"|"$value
-  echo $value | sed 's#:#\n#g' | sed 's/.*/ '$var'|&/'
+for var in $(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | grep -v "FLAGS"| grep "PATH"); do
+  eval value='$'"$var"
+#  echo " $var|$value"
+  echo "$value" | sed 's#:#\n#g' | sed "s/.*/ $var|&/"
 done | awk -F"|" '{printf "%16s=%-s\n",$1,$2 }'
 echo 
 }
 
-TEST_STEP4(){ DEBUG="TEST_STEP4"
-}
+#TEST_STEP4(){
+#}
 
 #========================================================= Test STEP5
 #================================================ Compilation of libs
-TEST_STEP5(){ DEBUG="TEST_STEP5"
+TEST_STEP5(){
   echo 
   echo -e "Compilation of the libs \e[32m\e[1mOK\e[21m\e[0m"
 }
 
 #========================================================= Test STEP6
 #=========================================== patch code_saturne source
-TEST_STEP6(){ DEBUG="TEST_STEP6"
+TEST_STEP6(){
   echo -e "Sources of code_saturne \e[32m\e[1mready\e[21m\e[0m"
 }
 
 #========================================================= Test STEP7
 #======================================== Compilation of code_saturne
-TEST_STEP7(){ DEBUG="TEST_STEP7"
+TEST_STEP7(){
   echo -e "Compilation of code_saturne \e[32m\e[1mOK\e[21m\e[0m"
 }
 
 #========================================================= Test STEP8
 #================================================= patch code_saturne
-TEST_STEP8(){ DEBUG="TEST_STEP8"
+TEST_STEP8(){
   echo -e "\e[32m\e[1mCode_saturne ready to use\e[21m\e[0m"
 }
 
 #========================================================= Test STEP9
 #========================================================== Debiefing
-TEST_STEP9(){ DEBUG="TEST_STEP9"
+TEST_STEP9(){
   echo
   echo -e "\e[32m\e[1mEND\e[21m\e[0m"
   echo
 }
 
 
-export() {
+export_perso() {
   command export "$*"
-  EXPORT_LIST="$EXPORT_LIST $(echo $*| cut -d"=" -f 1)"
+  EXPORT_LIST="$EXPORT_LIST $(echo "$*"| cut -d"=" -f 1)"
 }
 
-module_old=$(type module |  tail -n +4 | head -n -1)
-module() {
-  module_new=$(echo $module_old | sed "s/\$\*/$*/g")
-  eval $module_new
-  [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST $(echo $*| cut -d" " -f 2-)"
+module_old=$(type module 2> /dev/null |  tail -n +4 | head -n -1)
+module_perso() {
+  module_new=${module_old//\$\*/"$*"}
+  unset module ; shopt -u expand_aliases ; unset module; unalias module 
+  eval "$module_new"
+  shopt -s expand_aliases ; alias module='moduleraw2'
+  [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST $(echo "$*"| cut -d" " -f 2-)"
 }
+alias module='module_perso'
+alias export='export_perso'
 
 #============================================================== Catch
 #============================================================== Error
@@ -173,21 +180,21 @@ STOP(){
   echo
   echo
   echo -e "\e[31m\e[1m*** Error ***\e[21m\e[0m : "
-  echo $1
+  echo "$1"
   echo " in $DEBUG"
   echo
   echo "You may want to look at log files here"
-  echo $PWD
+  echo "$PWD"
   echo
   if [ -n "$EXPORT_LIST$MODULES_LIST" ]; then
     echo " to reproduce the environment :"
-    [[ -n "$MODULES_LIST" ]] &&    echo && echo $MODULES_LIST | sed 's:\ :\n:g' | sed 's/.*/module load &/'
+    [[ -n "$MODULES_LIST" ]] &&    echo && echo "$MODULES_LIST" | sed 's:\ :\n:g' | sed 's/.*/module load &/'
     if [ -n "$EXPORT_LIST" ]; then
       echo
-      EXPORT_LIST=$(echo $EXPORT_LIST | sed 's:\ :\n:g' | sort | uniq)
+      EXPORT_LIST=$(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | sort | uniq)
       for var in $EXPORT_LIST; do
-        eval value='$'$var
-        echo "export "$var"="$value
+        eval value='$'"$var"
+        echo "export $var=$value"
       done
     fi
   fi
@@ -198,18 +205,18 @@ STOP(){
 #=========================================================== Download
 #=========================================================== Function
 download(){
-  if [ ! -e  $PREFIX/pkg/$1 ] ; then # Download only if not already here
-    cd $PREFIX/pkg
-    if [ $DOWN == "NO" ] ; then STOP "Can't Download here, put your packages in pkg" ; fi
+  if [ ! -e  "$PREFIX/pkg/$1" ] ; then # Download only if not already here
+    cd "$PREFIX/pkg"
+    if [ "$DOWN" == "NO" ] ; then STOP "Can't Download here, put your packages in pkg" ; fi
     echo -n " - Downloading"
-    wget -O $1 $2 > /dev/null 2>&1 || STOP
+    wget -O "$1" "$2"  > /dev/null 2>&1
   fi
-  cd $PREFIX/src
-  if [ -d $PREFIX/src/$(basename $1 .tar.gz) ] ; then
-    rm -rf $PREFIX/src/$(basename $1 .tar.gz) # Remove the sources to clean it
+  cd "$PREFIX/src"
+  if [ -d "$PREFIX/src/$(basename "$1" .tar.gz)" ] ; then
+    rm -rf "$PREFIX/src/$(basename "$1" .tar.gz)" # Remove the sources to clean it
   fi
   echo -n " - Unpacking"
-  tar -zxvf $PREFIX/pkg/$1 > /dev/null 2>&1 || STOP "Decompressing the package, redownload it"
+  tar -zxvf "$PREFIX/pkg/$1" > /dev/null 2>&1 || STOP "Error decompressing the package, redownload it"
 }
 
 usage(){
@@ -229,9 +236,9 @@ usage(){
 }
 
 
-SCRIPTPATH=$(dirname $(readlink -f $0))
+SCRIPTPATH=$(dirname "$(readlink -f "$0")")
 
-while getopts “hm:p:v:g” OPTION
+while getopts "hm:p:v:g" OPTION
 do
      case $OPTION in
          h)
@@ -239,7 +246,7 @@ do
              exit 1
              ;;
          p)
-             PREFIX=$(readlink -f $OPTARG)
+             PREFIX=$(readlink -f "$OPTARG")
              ;;
          m)
              MACHINE=$OPTARG
@@ -274,11 +281,15 @@ done
 #STEP9 : debriefing
 LIST_STEP="0 1 2 3 4 5 6 7 8 9"
 for STEP in $LIST_STEP;do
-  for FILE in $(ls $SCRIPTPATH/*.conf);do
-    unset STEP$STEP
-    source $FILE $STEP
+  for FILE in "$SCRIPTPATH"/*.conf;do
+    unset "STEP$STEP"
+    DEBUG="STEP$STEP in $FILE"
+    [[ -d $PREFIX ]] && cd $PREFIX
+    source "$FILE" "$STEP"
+    [[ -d $PREFIX ]] && cd $PREFIX
   done
-  TEST_STEP$STEP
+  DEBUG="TEST_STEP$STEP"
+  TEST_STEP"$STEP"  2>/dev/null
 done
 
 
