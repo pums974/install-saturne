@@ -160,11 +160,12 @@ export() {
   EXPORT_LIST="$EXPORT_LIST $(echo $*| cut -d"=" -f 1)"
 }
 
+module_old=$(type module |  tail -n +4 | head -n -1)
 module() {
-  command module "$*"
+  module_new=$(echo $module_old | sed "s/\$\*/$*/g")
+  eval $module_new
   [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST $(echo $*| cut -d" " -f 2-)"
 }
-
 
 #============================================================== Catch
 #============================================================== Error
