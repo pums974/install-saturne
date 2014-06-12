@@ -88,7 +88,7 @@ TEST_STEP1(){
 #========================================================= Test STEP2
 #======================================================== Environment
 TEST_STEP2(){
-[[ -n "$MODULES_LIST" ]] && echo &&  echo "$MODULES_LIST" | sed 's:\ :\n:g' | sed 's/.*/module load &/'
+[[ -n "$MODULES_LIST" ]] && echo &&  echo "$MODULES_LIST" | sed 's:\ :\n:g' | head -n-1 | sed 's/.*/module load &/'
 }
 
 #========================================================= Test STEP3
@@ -165,11 +165,11 @@ export_perso() {
 
 module_old=$(type module 2> /dev/null |  tail -n +4 | head -n -1)
 module_perso() {
-  module_new=${module_old//\$\*/"$*"}
   unset module ; shopt -u expand_aliases ; unset module; unalias module 
-  eval "$module_new"
-  shopt -s expand_aliases ; alias module='moduleraw2'
-  [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST $(echo "$*"| cut -d" " -f 2-)"
+  eval ${module_old//\$\*/"$*"}
+#  eval ${module_old//\$\*/"list"}
+  shopt -s expand_aliases ; alias module='module_perso'
+  [[ "$1" == "load" ]] &&  MODULES_LIST="$MODULES_LIST$(echo "$*"| cut -d" " -f 2-)"
 }
 alias module='module_perso'
 alias export='export_perso'
@@ -188,13 +188,13 @@ STOP(){
   echo
   if [ -n "$EXPORT_LIST$MODULES_LIST" ]; then
     echo " to reproduce the environment :"
-    [[ -n "$MODULES_LIST" ]] &&    echo && echo "$MODULES_LIST" | sed 's:\ :\n:g' | sed 's/.*/module load &/'
+    [[ -n "$MODULES_LIST" ]] &&    echo && echo "$MODULES_LIST" | sed 's:\ :\n:g' | head -n-1 | sed 's/.*/module load &/'
     if [ -n "$EXPORT_LIST" ]; then
       echo
       EXPORT_LIST=$(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | sort | uniq)
       for var in $EXPORT_LIST; do
         eval value='$'"$var"
-        echo "export $var=$value"
+        [[ -n "$value" ]] && echo "export $var=$value"
       done
     fi
   fi
