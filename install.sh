@@ -2,6 +2,7 @@
 shopt -s expand_aliases
 exec > >(tee install.log)
 exec 2>&1
+exec 3>&1
 
 # This file does nothing but call each step of each file in the install directory
 # and checks if everything is OK
@@ -88,7 +89,7 @@ TEST_STEP1(){
 #========================================================= Test STEP2
 #======================================================== Environment
 TEST_STEP2(){
-[[ -n "$MODULES_LIST" ]] && echo &&  echo "$MODULES_LIST" | sed 's:\ :\n:g' | head -n-1 | sed 's/.*/module load &/'
+[[ -n "$MODULES_LIST" ]] && echo &&  echo "$MODULES_LIST" | sed 's:\ :\n:g' | tail -n+2 | sed 's/.*/module load &/'
 }
 
 #========================================================= Test STEP3
@@ -157,6 +158,17 @@ TEST_STEP9(){
   echo
 }
 
+stage() {
+  end_stage
+  echo -n " - $1"
+  export LOGFILE=$2
+  exec > $LOGFILE 2>&1
+}
+
+end_stage() {
+  export LOGFILE=""
+  exec >&3 2>&1
+}
 
 export_perso() {
   command export "$*"
@@ -177,6 +189,7 @@ alias export='export_perso'
 #============================================================== Catch
 #============================================================== Error
 STOP(){
+  exec >&3 2>&1
   echo
   echo
   echo -e "\e[31m\e[1m*** Error ***\e[21m\e[0m : "
@@ -184,11 +197,16 @@ STOP(){
   echo " in $DEBUG"
   echo
   echo "You may want to look at log files here"
-  echo "$PWD"
+  echo "$PWD/$LOGFILE"
+  echo
+  echo "Last 20 lines of logfile"
+  echo "======================================================================= "
+  tail -n 20 "$PWD/$LOGFILE"
+  echo "======================================================================= "
   echo
   if [ -n "$EXPORT_LIST$MODULES_LIST" ]; then
     echo " to reproduce the environment :"
-    [[ -n "$MODULES_LIST" ]] &&    echo && echo "$MODULES_LIST" | sed 's:\ :\n:g' | head -n-1 | sed 's/.*/module load &/'
+    [[ -n "$MODULES_LIST" ]] &&    echo && echo "$MODULES_LIST" | sed 's:\ :\n:g' | tail -n+2 | sed 's/.*/module load &/'
     if [ -n "$EXPORT_LIST" ]; then
       echo
       EXPORT_LIST=$(echo "$EXPORT_LIST" | sed 's:\ :\n:g' | sort | uniq)
